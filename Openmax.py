@@ -45,8 +45,11 @@ class Openmax:
     def save_model(self):
         self.model.save(self.MODEL_PATH + self.name+".h5")
 
-    def load_model(self, custom_objects=None):
-        self.model = load_model(self.MODEL_PATH + self.name+".h5", custom_objects=custom_objects)
+    def load_model(self):
+        self.model = load_model(self.MODEL_PATH + self.name+".h5")
+        self.backend_functions = []
+        for observation in self.observations:
+            self.init_backend_functions(observation)
         return self.model
 
     def get_correctly_classified(self):
@@ -156,7 +159,7 @@ class Openmax:
                                               classes=len(self.CLASSES),alpharank=alpha)
         return openmax, softmax
 
-    def adapt_tailsize(self, distance_type='eucos', tail_range=range(0,40), alpha_range=range(0,10)):
+    def adapt_params(self, distance_type='eucos', tail_range=range(0,40), alpha_range=range(0,10)):
         adaption = np.zeros((len(alpha_range) + 1, len(tail_range) + 1))
         for image in tqdm(self.x_data):
             for alpha in alpha_range:
@@ -172,3 +175,19 @@ class Openmax:
                     if np.argmax(openmax) == np.argmax(softmax):
                         adaption[alpha][tail] += 1
         return adaption
+
+    def adapt_tailsize(self, distance_type='eucos', adaption_range=range(1, 40)):
+        tails = np.zeros(len(adaption_range)+1)
+        for image in self.x_data:
+            for i in adaption_range:
+                self.create_weibull(distance_type, tailsize=i, overwrite=False)
+                if not image.shape == self.input_shape:
+                    image = image.reshape(self.input_shape)
+                imgarr = {'scores': self.compute_score(image),
+                          self.observations[0]: self.compute_feature(image)}
+                openmax, softmax = recalibrate_scores(self.weibull_model, range(len(self.CLASSES)), imgarr,
+                                                      self.observations[0], distance_type=distance_type,
+                                                      classes=len(self.CLASSES))
+                if np.argmax(openmax) == np.argmax(softmax):
+                    tails[i] += 1
+        return tails

@@ -1,1 +1,4 @@
-keras_openmax_pkg
+EVT_fitting
+Openmax
+compute_openmax
+openmax_utils

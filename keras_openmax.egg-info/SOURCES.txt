@@ -1,7 +1,11 @@
+EVT_fitting.py
+Openmax.py
 README.md
+compute_openmax.py
+openmax_utils.py
 setup.py
 keras_openmax.egg-info/PKG-INFO
 keras_openmax.egg-info/SOURCES.txt
 keras_openmax.egg-info/dependency_links.txt
+keras_openmax.egg-info/requires.txt
 keras_openmax.egg-info/top_level.txt
-keras_openmax_pkg/__init__.py
